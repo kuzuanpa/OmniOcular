@@ -107,7 +107,7 @@ public class JSHandler {
     //todo provide an function to detect player keyboard action. (hold shift, etc.)
     static void initEngine() {
         if(!initEngineGraal()){
-            LogHelper.info("try using default js engine");
+            LogHelper.info("[OmniOcular] try using default js engine");
             initEngineFallback();
         }
     }
@@ -115,7 +115,7 @@ public class JSHandler {
         ScriptEngineManager manager = new ScriptEngineManager(null);
         engine = manager.getEngineByName("javascript");
         if (engine==null){
-            LogHelper.fatal("no javascript engine");
+            LogHelper.fatal("[OmniOcular] no javascript engine! most features won't work!");
             return;
         }
         setSpecialChar();
@@ -144,7 +144,7 @@ public class JSHandler {
         ScriptEngineManager manager = new ScriptEngineManager();
         engine = manager.getEngineByName("graal.js");
         if (engine==null){
-            LogHelper.warn("use graal.js failed");
+            LogHelper.warn("[OmniOcular] use graal.js failed");
             return false;
         }
         Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);

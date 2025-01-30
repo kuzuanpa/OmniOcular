@@ -106,12 +106,47 @@ public class JSHandler {
 
     //todo provide an function to detect player keyboard action. (hold shift, etc.)
     static void initEngine() {
-//        List<ScriptEngineFactory> engines = (new ScriptEngineManager()).getEngineFactories();
-//        for (ScriptEngineFactory f: engines) {
-//            System.out.println(f.getLanguageName()+" "+f.getEngineName()+" "+f.getNames().toString());
-//        }
+        if(!initEngineGraal()){
+            LogHelper.info("try using default js engine");
+            initEngineFallback();
+        }
+    }
+    static void initEngineFallback() {
+        ScriptEngineManager manager = new ScriptEngineManager(null);
+        engine = manager.getEngineByName("javascript");
+        if (engine==null){
+            LogHelper.fatal("no javascript engine");
+            return;
+        }
+        setSpecialChar();
+        /* java 8 work around */
+        try {
+            engine.eval("load(\"nashorn:mozilla_compat.js\");");
+        } catch (ScriptException e) {
+            //e.printStackTrace();
+        }
+        try {
+            engine.eval("importClass(Packages.me.exz.omniocular.handler.JSHandler);");
+            engine.eval("function translate(t){return Packages.me.exz.omniocular.handler.JSHandler.translate(t)}");
+            engine.eval("function translateFormatted(t,obj){return Packages.me.exz.omniocular.handler.JSHanlder.translateFormatted(t,obj)}");
+            engine.eval("function name(n){return Packages.me.exz.omniocular.handler.JSHandler.getDisplayName(n.hashCode)}");
+            engine.eval("function fluidName(n){return Packages.me.exz.omniocular.handler.JSHandler.getFluidName(n)}");
+            engine.eval("function holding(){return Packages.me.exz.omniocular.handler.JSHandler.playerHolding()}");
+            engine.eval("function armor(i){return Packages.me.exz.omniocular.handler.JSHandler.playerArmor(i)}");
+            engine.eval("function isInHotbar(n){return Packages.me.exz.omniocular.handler.JSHandler.haveItemInHotbar(n)}");
+            engine.eval("function isInInv(n){return Packages.me.exz.omniocular.handler.JSHandler.haveItemInInventory(n)}");
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static boolean initEngineGraal() {
         ScriptEngineManager manager = new ScriptEngineManager();
         engine = manager.getEngineByName("graal.js");
+        if (engine==null){
+            LogHelper.warn("use graal.js failed");
+            return false;
+        }
         Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
         bindings.put("polyglot.js.allowHostAccess", true);
         bindings.put("polyglot.js.allowHostClassLookup", (Predicate<String>) s -> true);
@@ -121,9 +156,6 @@ public class JSHandler {
 //                        .allowHostClassLookup(s -> true)
 ////                        .option("js.ecmascript-version","2022")
 //        );
-        if (engine==null){
-            LogHelper.fatal("no javascript engine");
-        }
         setSpecialChar();
         /* java 8 work around */
         try {
@@ -142,8 +174,9 @@ public class JSHandler {
             engine.eval("function isInHotbar(n){return _JSHandler.haveItemInHotbar(n)}");
             engine.eval("function isInInv(n){return _JSHandler.haveItemInInventory(n)}");
         } catch (ScriptException e) {
-            e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     private static void setSpecialChar() {

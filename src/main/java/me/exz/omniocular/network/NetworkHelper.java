@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 public class NetworkHelper {
 
+    public static boolean outputConfig = false;
     private static void sendString(String string, EntityPlayerMP player) {
         ConfigMessageHandler.network.sendTo(new ConfigMessage(string), player);
     }
@@ -27,7 +28,7 @@ public class NetworkHelper {
                 ConfigHandler.mergedConfig = "";
                 break;
             case "__END__":
-                LogHelper.info("received config: " + ConfigHandler.mergedConfig);
+                if(outputConfig)LogHelper.info("received config: " + ConfigHandler.mergedConfig);
                 ConfigHandler.parseConfigFiles();
                 break;
             default:
